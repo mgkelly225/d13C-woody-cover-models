@@ -22,7 +22,7 @@ library(ggstar)
 ```
 
 ```{r}
-# custom functions for plotting (color/fill scales)
+# custom functions for plotting 
 source(file = "code/custom_functions.R", local = T)
 ```
 
@@ -36,10 +36,10 @@ iso_data <- read_csv("data/modern_enamel_d13C.csv")
 iso_data$d13C_scaled <- scale(iso_data$d13C_corrected)
 ```
 
-## Map of sites (Figure 1A)
+## Figure 1A: Map of sites 
 ```{r mapping}
 # use stadia maps
-register_stadiamaps(key = "YOUR-KEY-HERE") # input personal Stadia maps API key to generate map
+register_stadiamaps(key = "YOUR-KEY-HERE") # input personal Stadia maps API key to generate map 
 terrainmap <- get_map(location = c(left = -20, bottom = -37, right = 50, top = 23), zoom = 4, maptype = "stamen_terrain_background", source = "stadia")
 finelines <- get_map(location = c(left = -20, bottom = -37, right = 50, top = 23), zoom = 4, maptype = "stamen_toner_lines", source = "stadia")
 
@@ -54,7 +54,7 @@ isotope_data_map <- ggmap(terrainmap_transparent)+
   inset_ggmap(finelines)+ # sticks the country lines on top 
   geom_point(data = iso_data, aes(x = Longitude_updated, y = Latitude_updated), fill = "#A5506DFF", size = 3, shape = 24)+
   scale_y_continuous(position = "right", expand = 0)+
-  labs(x = "Longitude", y = "Latitude", title = "Modern enamel carbon isotope data localities", size = 12)+
+  labs(x = "Longitude", y = "Latitude", title = "Modern enamel carbon isotope data localities")+
   annotate("text",label = "© Stadia Maps © Stamen Design\n© OpenMapTiles © OpenStreetMap contributors", x = -18, y = -33, size = 3, hjust=0)+
   theme(axis.text = element_text(size = 10), plot.title = element_text(hjust = 0.5, size = 14))
 
@@ -63,7 +63,7 @@ ggsave(isotope_data_map, filename = "figures/isotope_data_map.pdf")
 
 ```
 
-## Barplot of sample size by family (Figure 1B):
+## Fiure 1B: Barplot of sample size by family:
 ```{r}
 iso_data %>% group_by(Family) %>% tally() %>% 
   ggplot() +
@@ -74,6 +74,141 @@ iso_data %>% group_by(Family) %>% tally() %>%
   theme_classic(base_size = 18)+
   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
 ggsave("figures/d13C_family_plot.png", width = 9, height = 7)
+```
+
+## (Supplementary Figure 1) Plot distributions of woody cover at each site 
+
+```{r}
+wc_data_gis <- read.csv("data/sites_in_analysis_histo.csv")
+wc_data_gis <- wc_data_gis %>% select(name, parent_iso, HISTO_1:HISTO_99)
+wc_data_gis <- wc_data_gis %>% pivot_longer(cols = c(HISTO_1:HISTO_99), names_to = "wc_value")
+wc_data_gis <- wc_data_gis %>% filter(value != 0)
+wc_data_gis <- wc_data_gis %>% uncount(value)
+wc_data_gis$wc_value <- sub("HISTO_", "", wc_data_gis$wc_value)
+wc_data_gis$wc_value <- as.numeric(wc_data_gis$wc_value)
+
+real_cameroon <- wc_data_gis %>% filter(parent_iso == "CAM") %>%
+    ggplot()+
+    stat_halfeye(aes(x = wc_value/100, y = name), color = "darkgreen", fill = alpha("darkgreen", alpha = 0.6), point_size = 3, point_interval = "median_qi", .width = 0.89, normalize = "groups")+
+    xlab("proportion woody cover") +
+    xlim(0,1)+
+    ylab(NULL)+
+    ggtitle("Cameroon")+
+    theme_classic(base_size = 16)+
+    theme(plot.title = element_text(face = "bold", size = 12, hjust = 0.5), legend.title = element_blank())
+
+real_drc <- wc_data_gis %>% filter(parent_iso == "COD") %>%
+    ggplot()+
+    stat_halfeye(aes(x = wc_value/100, y = name), color = "darkgreen", fill = alpha("darkgreen", alpha = 0.6), point_size = 3, point_interval = "median_qi", .width = 0.89, normalize = "groups")+
+    xlab("proportion woody cover") +
+    xlim(0,1)+
+    ylab(NULL)+
+    ggtitle("DRC")+
+    theme_classic(base_size = 16)+
+    theme(plot.title = element_text(face = "bold", size = 12, hjust = 0.5), legend.title = element_blank())
+
+real_ethiopia <- wc_data_gis %>% filter(parent_iso == "ETH") %>%
+    ggplot()+
+    stat_halfeye(aes(x = wc_value/100, y = name), color = "darkgreen", fill = alpha("darkgreen", alpha = 0.6), point_size = 3, point_interval = "median_qi", .width = 0.89, normalize = "groups")+
+    xlab("proportion woody cover") +
+    xlim(0,1)+
+    ylab(NULL)+
+    ggtitle("Ethiopia")+
+    theme_classic(base_size = 16)+
+    theme(plot.title = element_text(face = "bold", size = 12, hjust = 0.5), legend.title = element_blank())
+
+real_gabon <- wc_data_gis %>% filter(parent_iso == "GAB") %>%
+    ggplot()+
+    stat_halfeye(aes(x = wc_value/100, y = name), color = "darkgreen", fill = alpha("darkgreen", alpha = 0.6), point_size = 3, point_interval = "median_qi", .width = 0.89, normalize = "groups")+
+    xlab("proportion woody cover") +
+    xlim(0,1)+
+    scale_y_discrete(labels = c("La Lopé"))+
+    ylab(NULL)+
+    ggtitle("Gabon")+
+    theme_classic(base_size = 16)+
+    theme(plot.title = element_text(face = "bold", size = 12, hjust = 0.5), legend.title = element_blank())
+
+real_kenya <- wc_data_gis %>% filter(parent_iso == "KEN") %>%
+    ggplot()+
+    stat_halfeye(aes(x = wc_value/100, y = name), color = "darkgreen", fill = alpha("darkgreen", alpha = 0.6), point_size = 3, point_interval = "median_qi", .width = 0.89, normalize = "groups")+
+    xlab("proportion woody cover") +
+    xlim(0,1)+
+    ylab(NULL)+
+    ggtitle("Kenya")+
+    theme_classic(base_size = 16)+
+    theme(plot.title = element_text(face = "bold", size = 12, hjust = 0.5), legend.title = element_blank())
+
+real_liberia <- wc_data_gis %>% filter(parent_iso == "LIB") %>%
+    ggplot()+
+    stat_halfeye(aes(x = wc_value/100, y = name), color = "darkgreen", fill = alpha("darkgreen", alpha = 0.6), point_size = 3, point_interval = "median_qi", .width = 0.89, normalize = "groups")+
+    xlab("proportion woody cover") +
+    xlim(0,1)+
+    ylab(NULL)+
+    ggtitle("Liberia")+
+    theme_classic(base_size = 16)+
+    theme(plot.title = element_text(face = "bold", size = 12, hjust = 0.5), legend.title = element_blank())
+
+real_moz <- wc_data_gis %>% filter(parent_iso == "MOZ") %>%
+    ggplot()+
+    stat_halfeye(aes(x = wc_value/100, y = name), color = "darkgreen", fill = alpha("darkgreen", alpha = 0.6), point_size = 3, point_interval = "median_qi", .width = 0.89, normalize = "groups")+
+    xlab("proportion woody cover") +
+    xlim(0,1)+
+    ylab(NULL)+
+    ggtitle("Mozambique")+
+    theme_classic(base_size = 16)+
+    theme(plot.title = element_text(face = "bold", size = 12, hjust = 0.5), legend.title = element_blank())
+
+real_sa <- wc_data_gis %>% filter(parent_iso == "ZAF") %>%
+    ggplot()+
+    stat_halfeye(aes(x = wc_value/100, y = name), color = "darkgreen", fill = alpha("darkgreen", alpha = 0.6), point_size = 3, point_interval = "median_qi", .width = 0.89, normalize = "groups")+
+    xlab("proportion woody cover") +
+    xlim(0,1)+
+    ylab(NULL)+
+    ggtitle("South Africa")+
+    theme_classic(base_size = 16)+
+    theme(plot.title = element_text(face = "bold", size = 12, hjust = 0.5), legend.title = element_blank())
+
+real_tanzania <- wc_data_gis %>% filter(parent_iso == "TZA") %>%
+    ggplot()+
+    stat_halfeye(aes(x = wc_value/100, y = name), color = "darkgreen", fill = alpha("darkgreen", alpha = 0.6), point_size = 3, point_interval = "median_qi", .width = 0.89, normalize = "groups")+
+    xlab("proportion woody cover") +
+    xlim(0,1)+
+    ylab(NULL)+
+    ggtitle("Tanzania")+
+    theme_classic(base_size = 16)+
+    theme(plot.title = element_text(face = "bold", size = 12, hjust = 0.5), legend.title = element_blank())
+
+real_uganda <- wc_data_gis %>% filter(parent_iso == "UGA") %>%
+    ggplot()+
+    stat_halfeye(aes(x = wc_value/100, y = name), color = "darkgreen", fill = alpha("darkgreen", alpha = 0.6), point_size = 3, point_interval = "median_qi", .width = 0.89, normalize = "groups")+
+    xlab("proportion woody cover") +
+    xlim(0,1)+
+    ylab(NULL)+
+    ggtitle("Uganda")+
+    theme_classic(base_size = 16)+
+    theme(plot.title = element_text(face = "bold", size = 12, hjust = 0.5), legend.title = element_blank())
+```
+
+
+```{r, fig.height=20, fig.width=16}
+((real_ethiopia / real_tanzania / real_uganda / real_drc / real_moz / real_cameroon / real_gabon / real_liberia) + plot_layout(axis_titles = "collect", heights = c(7,3,4,4,1,1,1,1))) | ((real_kenya / real_sa) + plot_layout(axis_titles = "collect", heights = c(21,9)))
+ggsave("figures/real_woody_cover_distributions.pdf", width = 16, height = 20)
+```
+
+## (Supplementary Figure 2) Plot mean versus median woody cover at each site 
+```{r}
+ggplot(data = iso_data, aes(x = wc_mean, y = wc_median))+
+  geom_point(size = 2)+
+  geom_abline(aes(slope = 1, intercept = 0))+
+  labs(x = "Mean percent woody cover", y = "Median percent woody cover")+
+  theme_classic(base_size = 16)
+ggsave("figures/mean_vs_median_wc_data.png", width = 7, height = 7)
+```
+
+Summary statistics for median woody cover across all sites:
+```{r}
+site_wc <- iso_data %>% select(locality, wc_median) %>% distinct()
+summary(site_wc$wc_median)
 ```
 
 # Model with simulated data
@@ -141,7 +276,7 @@ dsim$d13C_scaled <- scale(dsim$d13C_sim)
 
 ```
 
-## 3. Visualize these simulated relationships to make sure that the data generation process generated the expected results.
+## 3. (Supplementary Figure 3) Visualize these simulated relationships to make sure that the data generation process generated the expected results.
 ```{r}
 ggplot(data = dsim, aes(x = d13C_sim, y = wc_sim, color = taxon, fill = taxon)) +
   geom_point()+
@@ -164,7 +299,7 @@ $$ WC \sim \mathrm{Beta}({\mu_i}, {\phi}) $$
 The estimated ${\mu}$ based on each individual's ${\delta}^{13}C$ value is modeled using the logit regression below. The intercept (${\alpha}$) and slope (${\beta}$) terms vary by taxon. 
 
 $$ \mathrm{logit}(\mu_i) = \alpha_{[taxon]_i} + \beta_{[taxon]_i}*{\delta}^{13}C_i $$
-The varying slope and intercept terms are distributed according to a multivariate normal distribution, centered at the mean intercept and slope, and varying according to the ovariance matrix, ${\Sigma}$.
+The varying slope and intercept terms are distributed according to a multivariate normal distribution, centered at the mean intercept and slope, and varying according to the covariance matrix, ${\Sigma}$.
 
 $$ \begin{bmatrix} \alpha_{[taxon]_i}\\ \beta_{[taxon]_i} \end{bmatrix} \sim \mathrm{MVNormal}(\begin{bmatrix} \alpha\\ \beta \end{bmatrix}, \mathbf{\Sigma})$$
 
@@ -215,7 +350,7 @@ set.seed(2474)
 pp_check(iso.sim.pp.check, ndraws = 100)
 ```
 
-Run the model on the data:
+Run the model on the simulated data:
 ```{r}
 iso.sim.model <- brm(
    iso.sim,
@@ -230,10 +365,15 @@ iso.sim.model <- brm(
 
 iso.sim.model
 ```
-
+ 
 Examine the output. Is the model estimating the parameters as expected based on the data generation process?
 ```{r}
 iso.sim.model$fit
+```
+
+Summed intercept and slope parameters for simulated taxa:
+```{r}
+varef_sim_model <- coef(iso.sim.model, summary = F)$taxon
 ```
 
 Posterior predictive check:
@@ -243,7 +383,7 @@ pp_check(iso.sim.model, ndraws = 300)
 
 ### Visualize model output
 
-Fixed effects plot:
+Fixed effects plot: 
 ```{r, warning=FALSE, message=FALSE}
 iso.sim.model.post <- as_draws_df(iso.sim.model) # sample 2000 posterior draws
 iso.sim.model.post %>% 
@@ -258,34 +398,34 @@ iso.sim.model.post %>%
 ggsave("figures/fixed_effects_varying_effects_simulated_data.png", width = 9, height = 7)
 ```
 
-Varying intercepts:
+#### Figure 2A: Varying intercepts
 ```{r, warning=FALSE, message=FALSE}
-iso.sim.model.post %>% 
-  dplyr::select(`r_taxon[A,Intercept]`:`r_taxon[J,Intercept]`) %>%
-  pivot_longer(`r_taxon[A,Intercept]`:`r_taxon[J,Intercept]`) %>%
-  mutate(name = substr(name, 9, nchar(name)-11)) %>%
-  ggplot() +
-  stat_pointinterval(aes(x = value, y = name), color = "#300948")+
-  geom_vline(xintercept = 0, color = alpha("gray20", alpha = 0.5)) +
-  ylab("taxon") +
-  xlab("coefficients for varying intercepts (log-odds)") +
-  theme_classic(base_size = 12)
-ggsave("figures/varying_intercept_coefficients_varying_slopes_simulated_data.png", width = 8, height = 7)
+# summed with fixed intercept
+varef_sim_model[,,"Intercept"] %>%
+   as_data_frame() %>%
+   gather() %>%
+   ggplot() +
+   stat_pointinterval(aes(x = value, y = key), color = "#300948")+
+   geom_vline(xintercept = 0, color = alpha("gray20", alpha = 0.5)) +
+   ylab(NULL) +
+   xlab("coefficients for varying intercepts (log-odds)") +
+   theme_classic(base_size = 16)
+ggsave("figures/SUM_varying_intercept_coefficients_varying_slopes_simulated_data.png", width = 8, height = 7)
 ```
 
-Varying slopes:
+#### Figure 2B: Varying slopes:
 ```{r, warning=FALSE, message=FALSE}
-iso.sim.model.post %>% 
-  dplyr::select(`r_taxon[A,d13C_scaled]`:`r_taxon[J,d13C_scaled]`) %>%
-  pivot_longer(`r_taxon[A,d13C_scaled]`:`r_taxon[J,d13C_scaled]`) %>%
-  mutate(name = substr(name, 9, nchar(name)-13)) %>%
-  ggplot() +
-  stat_pointinterval(aes(x = value, y = name), color = "#300948")+
-  geom_vline(xintercept = 0, color = alpha("gray20", alpha = 0.5)) +
-  ylab("taxon") +
-  xlab("coefficients for varying slopes (log-odds)") +
-  theme_classic(base_size = 12)
-ggsave("figures/slope_coefficients_varying_slopes_simulated_data.png", width = 8, height = 7)
+# summed with fixed slope
+varef_sim_model[,,"d13C_scaled"] %>%
+   as_data_frame() %>%
+   gather() %>%
+   ggplot() +
+   stat_pointinterval(aes(x = value, y = key), color = "#300948")+
+   geom_vline(xintercept = 0, color = alpha("gray20", alpha = 0.5)) +
+   ylab(NULL) +
+   xlab("coefficients for varying slopes (log-odds)") +
+   theme_classic(base_size = 16)
+ggsave("figures/SUM_slope_coefficients_varying_slopes_simulated_data.png", width = 8, height = 7)
 ```
 
 How well does the model predict?
@@ -296,6 +436,7 @@ iso.sim.model.post.pred <- bind_cols(dsim[,c("site", "taxon")], iso.sim.model.po
 iso.sim.model.post.pred <- pivot_longer(iso.sim.model.post.pred, cols = c(3:6002))
 ```
 
+#### Figure 3A: Posterior predictions
 ```{r, fig.height=9, fig.width=7, echo=FALSE}
 full_predictions <- iso.sim.model.post.pred %>%
   ggplot()+
@@ -309,7 +450,7 @@ full_predictions <- iso.sim.model.post.pred %>%
 ggsave(full_predictions, filename = "figures/posterior_predictions_varying_slopes_simulated_data.png", height = 9, width = 7)
 ```
 
-Coloring by taxon:
+#### Figure 3B: Posterior predictions, by taxon
 ```{r, fig.height=9, fig.width=8, echo=FALSE}
 full_predictions_by_taxon <- iso.sim.model.post.pred %>%
   ggplot()+
@@ -330,7 +471,7 @@ ggsave(full_predictions_by_taxon, filename = "figures/posterior_predictions_vary
 ggsave("figures/posterior_predictions_varying_slopes_simulated_data_compare.pdf", height = 9, width = 14)
 ```
 
-Plot "very strong" slopes only
+#### Figure 3C-D: Plot "very strong" slopes only
 ```{r, fig.height=9, fig.width=7, echo=FALSE}
 strong_predictions_by_taxon <- iso.sim.model.post.pred %>% filter(taxon %in% c("A", "B", "C")) %>%
   ggplot()+
@@ -443,16 +584,23 @@ iso_data$Pretreatment_Detail <- as.factor(iso_data$Pretreatment_Detail)
 levels(iso_data$Pretreatment_Detail) # 7 categories in the detailed method column
 ```
 
+Because the distributions of woody cover are non-normally distributed, we will model median woody cover at each site (although note that the mean and median values at each site are pretty well correlated, so the result should not be dramatically different):
+
+```{r}
+# convert wc_median column to a proportion
+iso_data$pct_wc_median <- iso_data$wc_median / 100
+```
+
 ## Specify the model
 ```{r}
 # model formula - requires a non-linear parameterization because of the two types of varying effects
-iso.model.formula <- bf(pct_wc_mean ~ 0 + d + p,
+iso.model.2.formula <- bf(pct_wc_median ~ 0 + d + p,
                           d ~ 1 + d13C_scaled + (1 + d13C_scaled | taxon_model),
                           p ~ 0 + Pretreatment_Detail,
                           nl = TRUE)
 
 # default priors
-get_prior(formula = iso.model.formula, data = iso_data, family = Beta())
+get_prior(formula = iso.model.2.formula, data = iso_data, family = Beta())
 
 # set the priors 
 iso.model.priors <- c(prior("normal(0, 0.5)", class = "b", nlpar = "d"), prior("gamma(15, 2)", class = "phi"), prior("gamma(2,10)", class = "sd", nlpar = "d"), prior("lkj(2)", class = "cor"), prior("normal(0, 0.5)", class = "b", nlpar = "p"))
@@ -461,8 +609,8 @@ iso.model.priors <- c(prior("normal(0, 0.5)", class = "b", nlpar = "d"), prior("
 ## Prior predictive check
 ```{r}
 # prior predictive check
-iso.model.pp.check <- brm(
-   iso.model.formula,
+iso.model.2.pp.check <- brm(
+   iso.model.2.formula,
    prior <- iso.model.priors,
    sample_prior = 'only',
    data = iso_data,
@@ -470,20 +618,20 @@ iso.model.pp.check <- brm(
    iter = 1000,
    chains = 4, 
    cores = 4,
-   file = "models/with_data/iso_model_pp_check")
+   file = "models/with_data/iso_model_2_pp_check")
 
-iso.model.pp.check
-plot(iso.model.pp.check, nvariables=3, ask=F)
+iso.model.2.pp.check
+plot(iso.model.2.pp.check, nvariables=3, ask=F)
 
-set.seed(23674)
-pp_check(iso.model.pp.check , ndraws = 100)
-ggsave("figures/prior_predictive_check_iso_model.png", bg = "white")
+set.seed(74839)
+pp_check(iso.model.2.pp.check , ndraws = 100)
+ggsave("figures/prior_predictive_check_iso_model_2.png", bg = "white")
 ```
 
 ## Sample posterior
 ```{r}
-iso.model <- brm(
-   iso.model.formula,
+iso.model.2 <- brm(
+   iso.model.2.formula,
    prior <- iso.model.priors,
    data = iso_data,
    family = Beta(),
@@ -491,29 +639,48 @@ iso.model <- brm(
    cores = 4,
    iter = 3000,
    control = list(adapt_delta = 0.99),
-   file = "models/with_data/iso_model")
+   file = "models/with_data/iso_model_2")
 
-iso.model
+iso.model.2
 ```
 
 ```{r}
-iso.model$fit
+iso.model.2$fit
 ```
 
 Posterior predictive check:
 ```{r}
-pp_check(iso.model, ndraws = 300)
-ggsave("figures/posterior_predictive_check_iso_model.png", bg = "white")
+pp_check(iso.model.2, ndraws = 300)
+ggsave("figures/posterior_predictive_check_iso_model_2.png", bg = "white", height = 8, width = 9)
 ```
 
 ## Visualize model output
 
-Fixed effects:
-```{r, warning=FALSE, message=FALSE}
-iso.model.post <- as_draws_df(iso.model) # sample 2000 posterior draws
+```{r}
+iso.model.2.post <- as_draws_df(iso.model.2) # sample 2000 posterior draws
+```
 
+### (Supplementary Figure 4) Plot the chains:
+```{r}
+iso.model.2.post %>%
+  select(-starts_with("r_"), -lp__, -lprior) %>%
+  pivot_longer(cols = c(1:13)) %>%
+  mutate(`.chain` = as.character(`.chain`)) %>%
+  ggplot(aes(x = `.iteration`, y = value, group = `.chain`, color = `.chain`)) +
+  scale_color_manual(values = c('#016450', '#3690c0','#a6bddb','#d0d1e6'), name = "chain")+
+  geom_line(linewidth = 1/4)+
+  ylab(NULL)+
+  xlab(NULL) +
+  theme_classic()+
+  facet_wrap(~name, ncol = 3, scales = "free_y")+
+  theme(legend.position = c(.5,.05), legend.direction = "horizontal")
+ggsave("figures/trace_plot_pop_effects.png", width= 10 , height = 10)
+```
+
+### Fixed effects:
+```{r, warning=FALSE, message=FALSE}
 # fixed effects minus pretreatment coefficients
-iso.model.post %>% 
+iso.model.2.post %>% 
   dplyr::select(b_d_Intercept, b_d_d13C_scaled, sd_taxon_model__d_Intercept, sd_taxon_model__d_d13C_scaled, cor_taxon_model__d_Intercept__d_d13C_scaled) %>%
   pivot_longer(cols = c(b_d_Intercept, b_d_d13C_scaled, sd_taxon_model__d_Intercept, sd_taxon_model__d_d13C_scaled, cor_taxon_model__d_Intercept__d_d13C_scaled)) %>%
   ggplot() +
@@ -522,10 +689,10 @@ iso.model.post %>%
   ylab(NULL) +
   xlab("coefficients for fixed effects (log-odds)") +
   theme_classic(base_size = 16)
-ggsave("figures/fixed_effects_iso_model.png", width = 9, height = 7)
+ggsave("figures/fixed_effects_iso_model_2.png", width = 9, height = 7)
 
 # pretreatment effects
-iso.model.post %>% 
+iso.model.2.post %>% 
   dplyr::select(b_p_Pretreatment_Detail0.1M_buff_AA:b_p_Pretreatment_DetailNone) %>%
   pivot_longer(b_p_Pretreatment_Detail0.1M_buff_AA:b_p_Pretreatment_DetailNone) %>%
   ggplot() +
@@ -534,186 +701,515 @@ iso.model.post %>%
   ylab(NULL) +
   xlab("coefficients for pretreatment effects (log-odds)") +
   theme_classic(base_size = 16)
-ggsave("figures/pretreatment_effects_iso_model.png", width = 9, height = 7)
+ggsave("figures/pretreatment_effects_iso_model_2.png", width = 9, height = 7)
 ```
 
-Varying intercepts:
+### Varying intercepts:
+(Need to wrangle here to get the coefficients that are the sum of population-level effects and group-level effects, not just the individual group-level effects, which represent a deviance from the corresponding population-level effect).
+
 ```{r, warning=FALSE, message=FALSE}
-iso.model.post %>% 
-  dplyr::select(`r_taxon_model__d[Aepycerotini,Intercept]`:`r_taxon_model__d[Viverridae,Intercept]`) %>%
-  pivot_longer(`r_taxon_model__d[Aepycerotini,Intercept]`:`r_taxon_model__d[Viverridae,Intercept]`) %>%
-  mutate(name = substr(name, 18, nchar(name)-11)) %>%
-  mutate(name = fct_reorder(name, desc(value))) %>%
+# extract summed model coefficients
+varef_model2 <- coef(iso.model.2, summary = F)$taxon_model[,,]
+
+# plot of summed coefficients
+varef_model2[,,"d_Intercept"] %>%
+  as_data_frame() %>%
+  gather() %>%
+  mutate(key = fct_reorder(key, desc(value))) %>%
   ggplot() +
-  stat_pointinterval(aes(x = value, y = name), color = "#300948")+
+  geom_rect(aes(xmin = -1.09, xmax = -0.17, ymax = 24.5, ymin=0), fill = "gray80")+
+  geom_vline(xintercept = -0.63, linetype = 2, alpha = 0.5)+
+  stat_pointinterval(aes(x =value, y = key), color = "#300948")+
   geom_vline(xintercept = 0, color = alpha("gray20", alpha = 0.5)) +
   ylab(NULL) +
   xlab("coefficients for varying intercepts (log-odds)") +
   theme_classic(base_size = 16)
-ggsave("figures/varying_intercept_coefficients_iso_model.png", width = 9, height = 7)
+ggsave("figures/sum_varying_intercept_coefficients_iso_model_2.png", width = 9, height = 7)
 ```
 
-Varying slopes:
+### Varying slopes:
 ```{r, warning=FALSE, message=FALSE}
-iso.model.post %>% 
-  dplyr::select(`r_taxon_model__d[Aepycerotini,d13C_scaled]`:`r_taxon_model__d[Viverridae,d13C_scaled]`) %>%
-  pivot_longer(`r_taxon_model__d[Aepycerotini,d13C_scaled]`:`r_taxon_model__d[Viverridae,d13C_scaled]`) %>%
-  mutate(name = substr(name, 18, nchar(name)-13)) %>%
-  mutate(name = fct_reorder(name, desc(value))) %>%
+# plot of summed coefficients
+varef_model2[,,"d_d13C_scaled"] %>%
+  as_data_frame() %>%
+  gather() %>%
+  mutate(key = fct_reorder(key, desc(value))) %>%
   ggplot() +
-  stat_pointinterval(aes(x = value, y = name), color = "#300948")+
+  stat_pointinterval(aes(x = value, y = key), color = "#300948")+
   geom_vline(xintercept = 0, color = alpha("gray20", alpha = 0.5)) +
+  geom_vline(xintercept = -1.02)+
+  geom_vline(xintercept = -0.73)+
+  geom_vline(xintercept = -0.43)+
   ylab(NULL) +
   xlab("coefficients for varying slopes (log-odds)") +
   theme_classic(base_size = 16)
-ggsave("figures/varying_slopes_iso_model.png", width = 9, height = 7)
+ggsave("figures/sum_varying_slopes_iso_model_2.png", width = 9, height = 7)
+```
+
+### Figure 5: Plot varying effects with family and tribe-level colors for comparison
+```{r}
+# varying intercepts - family level (minus bovids)
+var_int_fam <- varef_model2[,,"d_Intercept"] %>%
+  as_data_frame() %>%
+  gather() %>%
+  filter(key %in% c("Canidae","Cercopithecidae","Elephantidae","Equidae","Felidae","Giraffidae", "Hippopotamidae","Hominidae","Hyaenidae","Hystricidae","Rhinocerotidae","Suidae","Tragulidae","Viverridae")) %>%
+  mutate(key = fct_reorder(key, desc(value))) %>%
+  ggplot() +
+  annotate(geom = "rect", xmin = -1.09, xmax = -0.17, ymax = 14.5, ymin=0, fill = "gray90")+
+  geom_vline(xintercept = -0.63, linetype = 2, alpha = 0.5)+
+  geom_vline(xintercept = 0, color = alpha("gray20", alpha = 0.5)) +
+  stat_pointinterval(aes(x =value, y = key, color = key))+
+  family_colors()+
+  ylab(NULL) +
+  xlim(-3,2)+
+  xlab("varying intercepts (log-odds)") +
+  theme_classic(base_size = 16)+
+  theme(legend.position = "none")
+ggsave("figures/sum_varying_intercepts_families.png", width = 9, height = 8)
+
+# varying intercepts - bovid tribes only
+var_int_tribe <- varef_model2[,,"d_Intercept"] %>%
+  as_data_frame() %>%
+  gather() %>%
+  filter(key %in% c("Aepycerotini","Alcelaphini","Antilopini","Bovini","Caprini","Cephalophini","Hippotragini","Neotragini","Reduncini","Tragelaphini")) %>%
+  mutate(key = fct_reorder(key, desc(value))) %>%
+  ggplot() +
+  annotate(geom = "rect", xmin = -1.09, xmax = -0.17, ymax = 10.5, ymin=0, fill = "gray90")+
+  geom_vline(xintercept = -0.63, linetype = 2, alpha = 0.5)+
+  geom_vline(xintercept = 0, color = alpha("gray20", alpha = 0.5)) +
+  stat_pointinterval(aes(x =value, y = key, color = key))+
+  bovid_colors()+
+  ylab(NULL) +
+  xlim(-3,2)+
+  xlab("varying intercepts (log-odds)") +
+  theme_classic(base_size = 16)+
+  theme(legend.position = "none")
+ggsave("figures/sum_varying_intercepts_tribes.png", width = 9, height = 8)
+
+# varying slopes - family level (minus bovids)
+var_slo_fam <- varef_model2[,,"d_d13C_scaled"] %>%
+  as_data_frame() %>%
+  gather() %>%
+  filter(key %in% c("Canidae","Cercopithecidae","Elephantidae","Equidae","Felidae","Giraffidae", "Hippopotamidae","Hominidae","Hyaenidae","Hystricidae","Rhinocerotidae","Suidae","Tragulidae","Viverridae")) %>%
+  mutate(key = fct_reorder(key, desc(value))) %>%
+  ggplot() +
+  annotate(geom = "rect", xmin = -1.02, xmax = -0.43, ymax = 14.5, ymin=0, fill = "gray90")+
+  geom_vline(xintercept = -0.73, linetype = 2, alpha = 0.5)+
+  geom_vline(xintercept = 0, color = alpha("gray20", alpha = 0.5)) +
+  stat_pointinterval(aes(x =value, y = key, color = key))+
+  family_colors()+
+  ylab(NULL) +
+  xlim(-3.3,1)+
+  xlab("varying slopes (log-odds)") +
+  theme_classic(base_size = 16)+
+  theme(legend.position = "none")
+ggsave("figures/sum_varying_slopes_families.png", width = 9, height = 8)
+
+# varying slopes - bovid tribes only
+var_slo_tribe <- varef_model2[,,"d_d13C_scaled"] %>%
+  as_data_frame() %>%
+  gather() %>%
+  filter(key %in% c("Aepycerotini","Alcelaphini","Antilopini","Bovini","Caprini","Cephalophini","Hippotragini","Neotragini","Reduncini","Tragelaphini")) %>%
+  mutate(key = fct_reorder(key, desc(value))) %>%
+  ggplot() +
+  annotate(geom = "rect", xmin = -1.02, xmax = -0.43, ymax = 10.5, ymin=0, fill = "gray90")+
+  geom_vline(xintercept = -0.73, linetype = 2, alpha = 0.5)+
+  geom_vline(xintercept = 0, color = alpha("gray20", alpha = 0.5)) +
+  stat_pointinterval(aes(x =value, y = key, color = key))+
+  bovid_colors()+
+  ylab(NULL) +
+  xlim(-3.3,1)+
+  xlab("varying slopes (log-odds)") +
+  theme_classic(base_size = 16)+
+  theme(legend.position = "none")
+ggsave("figures/sum_varying_slopes_tribes.png", width = 9, height = 8)
+```
+
+```{r, fig.height=12, fig.width=14}
+(var_slo_fam / var_slo_tribe) + plot_layout(axis_titles = "collect", heights = c(14, 10)) | (var_int_fam  / var_int_tribe) + plot_layout(axis_titles = "collect", heights = c(14, 10))
+ggsave("figures/summary_varying_effects_color.png", width = 14, height = 12)
 ```
 
 Extract posterior predictions of woody cover:
 ```{r, results='hide', message=FALSE}
-iso.model.post.pred <- posterior_epred(iso.model) # generate posterior predictions for each specimen
-iso.model.post.pred<- t(iso.model.post.pred)
-iso.model.post.pred <- bind_cols(iso_data[,c("locality", "Family", "taxon_model", "Sample_ID", "COUNTRY", "pct_wc_mean")], iso.model.post.pred)
-iso.model.post.pred <- pivot_longer(iso.model.post.pred, cols = c(7:6006))
+iso.model.2.post.pred <- posterior_epred(iso.model.2) # generate posterior predictions for each specimen
+iso.model.2.post.pred<- t(iso.model.2.post.pred)
+iso.model.2.post.pred <- bind_cols(iso_data[,c("locality", "Family", "taxon_model", "Sample_ID", "COUNTRY", "pct_wc_median")], iso.model.2.post.pred)
+iso.model.2.post.pred <- pivot_longer(iso.model.2.post.pred, cols = c(7:6006))
 ```
 
-Plot overall predictions for each country:
+### (Supplementary Figure 5) Plot overall predictions for each country:
 ```{r, echo=FALSE}
 # uses custom "country_plot" function
 
-post.cameroon <- country_plot(posterior_preds = iso.model.post.pred, country = "Cameroon", real_data = iso_data)
-ggsave("figures/post_cameroon.png", post.cameroon, width = 7, height = 4)
+post.cameroon.2 <- country_plot(posterior_preds = iso.model.2.post.pred, country = "Cameroon", real_data = iso_data)
+ggsave("figures/post_cameroon_2.png", post.cameroon.2, width = 7, height = 4)
 
-post.drc <- country_plot(posterior_preds = iso.model.post.pred, country = "DRC", real_data = iso_data)
-ggsave("figures/post_drc.png", post.drc, width = 8, height = 6)
+post.drc.2 <- country_plot(posterior_preds = iso.model.2.post.pred, country = "DRC", real_data = iso_data)
+ggsave("figures/post_drc_2.png", post.drc.2, width = 8, height = 6)
 
-post.ethiopia <- country_plot(posterior_preds = iso.model.post.pred, country = "Ethiopia", real_data = iso_data)
-ggsave("figures/post_ethiopia.png", post.ethiopia, width = 9, height = 8)
+post.ethiopia.2 <- country_plot(posterior_preds = iso.model.2.post.pred, country = "Ethiopia", real_data = iso_data)
+ggsave("figures/post_ethiopia_2.png", post.ethiopia.2, width = 9, height = 8)
 
-post.gabon <- country_plot(posterior_preds = iso.model.post.pred, country = "Gabon", real_data = iso_data)
-post.gabon <- post.gabon + scale_y_discrete(labels = c("La Lopé")) # fix special character in site name
-ggsave("figures/post_gabon.png", post.gabon, width = 7, height = 4)
+post.gabon.2 <- country_plot(posterior_preds = iso.model.2.post.pred, country = "Gabon", real_data = iso_data)
+post.gabon.2 <- post.gabon.2 + scale_y_discrete(labels = c("La Lopé")) # fix special character in site name
+ggsave("figures/post_gabon_2.png", post.gabon.2, width = 7, height = 4)
 
-post.kenya <- country_plot(posterior_preds = iso.model.post.pred, country = "Kenya", real_data = iso_data)
-ggsave("figures/post_kenya.png", post.kenya, width = 10, height = 10)
+post.kenya.2 <- country_plot(posterior_preds = iso.model.2.post.pred, country = "Kenya", real_data = iso_data)
+ggsave("figures/post_kenya_2.png", post.kenya.2, width = 10, height = 10)
 
-post.liberia <- country_plot(posterior_preds = iso.model.post.pred, country = "Liberia", real_data = iso_data)
-ggsave("figures/post_liberia.png", post.liberia, width = 7, height = 4)
+post.liberia.2 <- country_plot(posterior_preds = iso.model.2.post.pred, country = "Liberia", real_data = iso_data)
+ggsave("figures/post_liberia_2.png", post.liberia.2, width = 7, height = 4)
 
-post.moz <- country_plot(posterior_preds = iso.model.post.pred, country = "Mozambique", real_data = iso_data)
-ggsave("figures/post_mozambique.png", post.moz, width = 7, height = 4)
+post.moz.2 <- country_plot(posterior_preds = iso.model.2.post.pred, country = "Mozambique", real_data = iso_data)
+ggsave("figures/post_mozambique_2.png", post.moz.2, width = 7, height = 4)
 
-post.sa <- country_plot(posterior_preds = iso.model.post.pred, country = "South Africa", real_data = iso_data)
-ggsave("figures/post_southafrica.png", post.sa, width = 9, height = 8)
+post.sa.2 <- country_plot(posterior_preds = iso.model.2.post.pred, country = "South Africa", real_data = iso_data)
+ggsave("figures/post_southafrica_2.png", post.sa.2, width = 9, height = 8)
 
-post.tanzania <- country_plot(posterior_preds = iso.model.post.pred, country = "Tanzania", real_data = iso_data)
-ggsave("figures/post_tanzania.png", post.tanzania, width = 8, height = 6)
+post.tanzania.2 <- country_plot(posterior_preds = iso.model.2.post.pred, country = "Tanzania", real_data = iso_data)
+ggsave("figures/post_tanzania_2.png", post.tanzania.2, width = 8, height = 6)
 
-post.uganda <- country_plot(posterior_preds = iso.model.post.pred, country = "Uganda", real_data = iso_data)
-ggsave("figures/post_uganda.png", post.uganda, width = 9, height = 6)
+post.uganda.2 <- country_plot(posterior_preds = iso.model.2.post.pred, country = "Uganda", real_data = iso_data)
+ggsave("figures/post_uganda_2.png", post.uganda.2, width = 9, height = 6)
 ```
 
-Eastern African localities:
-```{r}
-((post.ethiopia / post.tanzania / post.uganda) + plot_layout(axis_titles = "collect", heights = c(2,1,1)) | post.kenya ) + plot_layout(guides = "collect")
-ggsave("figures/post_predictions_eastern_africa.png", height = 12, width = 16)
+```{r, fig.height=20, fig.width=16}
+(((post.ethiopia.2 / post.tanzania.2 / post.uganda.2 / post.drc.2 / post.moz.2 / post.cameroon.2 / post.gabon.2 / post.liberia.2) + plot_layout(axis_titles = "collect", heights = c(7,3,4,4,1,1,1,1))) | ((post.kenya.2 / post.sa.2) + plot_layout(axis_titles = "collect", heights = c(21,9)))) + plot_layout(guides = "collect") & theme(legend.position = "bottom")
+ggsave("figures/posterior_predictions_summary_all_sites_model_2.pdf", width = 16, height = 20)
 ```
 
-Western, central, and southern African localities:
-```{r}
-((post.cameroon / post.gabon / post.liberia / post.drc / post.moz) + plot_layout(axis_titles = "collect", heights = c(1,1,1,3,1)) | post.sa) + plot_layout(guides = "collect")
-ggsave("figures/post_predictions_western_central_southern_africa.png", height = 11, width = 14)
-```
-
-#### Plot by taxon
+### (Supplementary Figure 6) Plot by taxon
 ```{r, echo=F}
-post.cameroon.taxa <- country_taxon_plot(posterior_preds = iso.model.post.pred, country = "Cameroon", real_data = iso_data)
-ggsave("figures/posterior_predictions_iso_model_by_taxon_cameroon.png", post.cameroon.taxa, height = 4, width = 7)
+post.cameroon.taxa.2 <- country_taxon_plot(posterior_preds = iso.model.2.post.pred, country = "Cameroon", real_data = iso_data)
+ggsave("figures/posterior_predictions_iso_model_by_taxon_cameroon_2.png", post.cameroon.taxa.2, height = 4, width = 7)
 
-post.drc.taxa <- country_taxon_plot(posterior_preds = iso.model.post.pred, country = "DRC", real_data = iso_data)
-ggsave("figures/posterior_predictions_iso_model_by_taxon_drc.png", post.drc.taxa, height = 6, width = 8)
+post.drc.taxa.2 <- country_taxon_plot(posterior_preds = iso.model.2.post.pred, country = "DRC", real_data = iso_data)
+ggsave("figures/posterior_predictions_iso_model_by_taxon_drc_2.png", post.drc.taxa.2, height = 6, width = 8)
 
-post.ethio.taxa <- country_taxon_plot(posterior_preds = iso.model.post.pred, country = "Ethiopia", real_data = iso_data)
-ggsave("figures/posterior_predictions_iso_model_by_taxon_ethiopia.png", post.ethio.taxa, height = 8, width = 10)
+post.ethio.taxa.2 <- country_taxon_plot(posterior_preds = iso.model.2.post.pred, country = "Ethiopia", real_data = iso_data)
+ggsave("figures/posterior_predictions_iso_model_by_taxon_ethiopia_2.png", post.ethio.taxa.2, height = 8, width = 10)
 
-post.gabon.taxa <- country_taxon_plot(posterior_preds = iso.model.post.pred, country = "Gabon", real_data = iso_data)
-post.gabon.taxa <- post.gabon.taxa + scale_y_discrete(labels = c("La Lopé")) # fix special character in site name
-ggsave("figures/posterior_predictions_iso_model_by_taxon_gabon.png", post.gabon.taxa, height = 4, width = 7)
+post.gabon.taxa.2 <- country_taxon_plot(posterior_preds = iso.model.2.post.pred, country = "Gabon", real_data = iso_data)
+post.gabon.taxa.2 <- post.gabon.taxa.2 + scale_y_discrete(labels = c("La Lopé")) # fix special character in site name
+ggsave("figures/posterior_predictions_iso_model_by_taxon_gabon_2.png", post.gabon.taxa.2, height = 4, width = 7)
 
-post.kenya.taxa <- country_taxon_plot(posterior_preds = iso.model.post.pred, country = "Kenya", real_data = iso_data)
-ggsave("figures/posterior_predictions_iso_model_by_taxon_kenya.png", post.kenya.taxa, height = 12, width = 13)
+post.kenya.taxa.2 <- country_taxon_plot(posterior_preds = iso.model.2.post.pred, country = "Kenya", real_data = iso_data)
+ggsave("figures/posterior_predictions_iso_model_by_taxon_kenya_2.png", post.kenya.taxa.2, height = 12, width = 13)
 
-post.liberia.taxa <- country_taxon_plot(posterior_preds = iso.model.post.pred, country = "Liberia", real_data = iso_data)
-ggsave("figures/posterior_predictions_iso_model_by_taxon_liberia.png", post.liberia.taxa, height = 4, width = 7)
+post.liberia.taxa.2 <- country_taxon_plot(posterior_preds = iso.model.2.post.pred, country = "Liberia", real_data = iso_data)
+ggsave("figures/posterior_predictions_iso_model_by_taxon_liberia_2.png", post.liberia.taxa.2, height = 4, width = 7)
 
-post.moz.taxa <- country_taxon_plot(posterior_preds = iso.model.post.pred, country = "Mozambique", real_data = iso_data)
-ggsave("figures/posterior_predictions_iso_model_by_taxon_mozambique.png", post.moz.taxa, height = 4, width = 7)
+post.moz.taxa.2 <- country_taxon_plot(posterior_preds = iso.model.2.post.pred, country = "Mozambique", real_data = iso_data)
+ggsave("figures/posterior_predictions_iso_model_by_taxon_mozambique_2.png", post.moz.taxa.2, height = 4, width = 7)
 
-post.sa.taxa <- country_taxon_plot(posterior_preds = iso.model.post.pred, country = "South Africa", real_data = iso_data)
-ggsave("figures/posterior_predictions_iso_model_by_taxon_sa.png", post.sa.taxa, height = 8, width = 9)
+post.sa.taxa.2 <- country_taxon_plot(posterior_preds = iso.model.2.post.pred, country = "South Africa", real_data = iso_data)
+ggsave("figures/posterior_predictions_iso_model_by_taxon_sa_2.png", post.sa.taxa.2, height = 8, width = 9)
 
-post.tanzania.taxa <- country_taxon_plot(posterior_preds = iso.model.post.pred, country = "Tanzania", real_data = iso_data)
-ggsave("figures/posterior_predictions_iso_model_by_taxon_tanzania.png", post.tanzania.taxa, height = 6, width = 8)
+post.tanzania.taxa.2 <- country_taxon_plot(posterior_preds = iso.model.2.post.pred, country = "Tanzania", real_data = iso_data)
+ggsave("figures/posterior_predictions_iso_model_by_taxon_tanzania_2.png", post.tanzania.taxa.2, height = 6, width = 8)
 
-post.uganda.taxa <- country_taxon_plot(posterior_preds = iso.model.post.pred, country = "Uganda", real_data = iso_data)
-ggsave("figures/posterior_predictions_iso_model_by_taxon_uganda.png", post.uganda.taxa, width = 9, height = 6)
+post.uganda.taxa.2 <- country_taxon_plot(posterior_preds = iso.model.2.post.pred, country = "Uganda", real_data = iso_data)
+ggsave("figures/posterior_predictions_iso_model_by_taxon_uganda_2.png", post.uganda.taxa.2, width = 9, height = 6)
 ```
 
+```{r, fig.height=20, fig.width=16}
+(((post.ethio.taxa.2 / post.tanzania.taxa.2 / post.uganda.taxa.2 / post.drc.taxa.2 / post.moz.taxa.2 / post.cameroon.taxa.2 / post.gabon.taxa.2 / post.liberia.taxa.2) + plot_layout(axis_titles = "collect", heights = c(7,3,4,4,1,1,1,1))) | ((post.kenya.taxa.2 / post.sa.taxa.2) + plot_layout(axis_titles = "collect", heights = c(21,9)))) + plot_layout(guides = "collect") & theme(legend.position = "bottom", legend.direction = "horizontal")
+ggsave("figures/posterior_predictions_summary_all_sites_model_2_taxa.pdf", width = 16, height = 20)
+```
 
-#### Plot bovids by tribe
+### (Supplementary Figure 7) Plot bovids by tribe
 
 ```{r}
 # can't plot Cameroon or Liberia because there are no bovids in either sample
 
-post.drc.bovids <- country_bovid_plot(posterior_preds = iso.model.post.pred, country = "DRC", real_data = iso_data)
-ggsave("figures/posterior_predictions_iso_model_bovids_drc.png", post.drc.bovids, height = 6, width = 8)
+post.drc.bovids.2 <- country_bovid_plot(posterior_preds = iso.model.2.post.pred, country = "DRC", real_data = iso_data)
+ggsave("figures/posterior_predictions_iso_model_bovids_drc_2.png", post.drc.bovids.2, height = 6, width = 8)
 
-post.ethio.bovids <- country_bovid_plot(posterior_preds = iso.model.post.pred, country = "Ethiopia", real_data = iso_data)
-ggsave("figures/posterior_predictions_iso_model_bovids_ethiopia.png", post.ethio.bovids, height = 8, width = 10)
+post.ethio.bovids.2 <- country_bovid_plot(posterior_preds = iso.model.2.post.pred, country = "Ethiopia", real_data = iso_data)
+ggsave("figures/posterior_predictions_iso_model_bovids_ethiopia_2.png", post.ethio.bovids.2, height = 8, width = 10)
 
-post.gabon.bovids <- country_bovid_plot(posterior_preds = iso.model.post.pred, country = "Gabon", real_data = iso_data)
-post.gabon.bovids <- post.gabon.bovids + scale_y_discrete(labels = c("La Lopé")) # fix special character
-ggsave("figures/posterior_predictions_iso_model_bovids_gabon.png", post.gabon.bovids, height = 6, width = 8)
+post.gabon.bovids.2 <- country_bovid_plot(posterior_preds = iso.model.2.post.pred, country = "Gabon", real_data = iso_data)
+post.gabon.bovids.2 <- post.gabon.bovids.2 + scale_y_discrete(labels = c("La Lopé")) # fix special character
+ggsave("figures/posterior_predictions_iso_model_bovids_gabon_2.png", post.gabon.bovids.2, height = 6, width = 8)
 
-post.kenya.bovids <- country_bovid_plot(posterior_preds = iso.model.post.pred, country = "Kenya", real_data = iso_data)
-ggsave("figures/posterior_predictions_iso_model_bovids_kenya.png", post.kenya.bovids, height = 12, width = 13)
+post.kenya.bovids.2 <- country_bovid_plot(posterior_preds = iso.model.2.post.pred, country = "Kenya", real_data = iso_data)
+ggsave("figures/posterior_predictions_iso_model_bovids_kenya_2.png", post.kenya.bovids.2, height = 12, width = 13)
 
-post.moz.bovids <- country_bovid_plot(posterior_preds = iso.model.post.pred, country = "Mozambique", real_data = iso_data)
-ggsave("figures/posterior_predictions_iso_model_bovids_mozambique.png", post.moz.bovids, height = 4, width = 8)
+post.moz.bovids.2 <- country_bovid_plot(posterior_preds = iso.model.2.post.pred, country = "Mozambique", real_data = iso_data)
+ggsave("figures/posterior_predictions_iso_model_bovids_mozambique_2.png", post.moz.bovids.2, height = 4, width = 8)
 
-post.sa.bovids <- country_bovid_plot(posterior_preds = iso.model.post.pred, country = "South Africa", real_data = iso_data)
-ggsave("figures/posterior_predictions_iso_model_bovids_sa.png", post.sa.bovids, height = 8, width = 10)
+post.sa.bovids.2 <- country_bovid_plot(posterior_preds = iso.model.2.post.pred, country = "South Africa", real_data = iso_data)
+ggsave("figures/posterior_predictions_iso_model_bovids_sa_2.png", post.sa.bovids.2, height = 8, width = 10)
 
-post.tanzania.bovids <- country_bovid_plot(posterior_preds = iso.model.post.pred, country = "Tanzania", real_data = iso_data)
-ggsave("figures/posterior_predictions_iso_model_bovids_tanzania.png", post.tanzania.bovids, height = 5, width = 8)
+post.tanzania.bovids.2 <- country_bovid_plot(posterior_preds = iso.model.2.post.pred, country = "Tanzania", real_data = iso_data)
+ggsave("figures/posterior_predictions_iso_model_bovids_tanzania_2.png", post.tanzania.bovids.2, height = 5, width = 8)
 
-post.uganda.bovids <- country_bovid_plot(posterior_preds = iso.model.post.pred, country = "Uganda", real_data = iso_data)
-ggsave("figures/posterior_predictions_iso_model_bovids_uganda.png", post.uganda.bovids, width = 9, height = 6)
+post.uganda.bovids.2 <- country_bovid_plot(posterior_preds = iso.model.2.post.pred, country = "Uganda", real_data = iso_data)
+ggsave("figures/posterior_predictions_iso_model_bovids_uganda_2.png", post.uganda.bovids.2, width = 9, height = 6)
 ```
 
-### Summary plot of how predictions at all sites compare to real mean woody cover
+```{r, fig.height=20, fig.width=16}
+(((post.ethio.bovids.2 / post.tanzania.bovids.2 / post.uganda.bovids.2 / post.drc.bovids.2 / post.moz.bovids.2 /  post.gabon.bovids.2 ) + plot_layout(axis_titles = "collect", heights = c(7,2,4,4,1,1))) | ((post.kenya.bovids.2 / post.sa.bovids.2) + plot_layout(axis_titles = "collect", heights = c(21,9)))) + plot_layout(guides = "collect") & theme(legend.position = "bottom", legend.direction = "horizontal")
+ggsave("figures/posterior_predictions_summary_all_sites_model_2_bovids.pdf", width = 16, height = 20)
+```
+
+### Figure 4: Summary plot of how predictions at all sites compare to real mean woody cover
 
 ```{r}
 # summary statistics for posterior predictions by site
-summary.iso.model <- iso.model.post.pred %>% group_by(locality) %>% mutate(mean_wc_pred = mean(value), med_wc_pred = median(value), var_wc_pred = var(value), sd_wc_pred = sd(value)) %>% dplyr::select(locality, mean_wc_pred, med_wc_pred, var_wc_pred, sd_wc_pred) %>% unique()
+summary.iso.model.2 <- iso.model.2.post.pred %>% group_by(locality) %>% mutate(mean_wc_pred = mean(value), med_wc_pred = median(value), var_wc_pred = var(value), sd_wc_pred = sd(value), iqr_wc_pred = IQR(value), q1_wc_pred = quantile(value, 0.25), q3_wc_pred = quantile(value, 0.75)) %>% dplyr::select(locality, mean_wc_pred, med_wc_pred, var_wc_pred, sd_wc_pred, iqr_wc_pred, q1_wc_pred, q3_wc_pred) %>% unique()
 
 # join summary statistics with data from woody cover dataset
-summary.iso.model <- left_join(summary.iso.model, iso_data[,c("locality", "wc_mean", "wc_median", "wc_variance", "wc_stdev", "AREA..sq.km.")], by = "locality") %>% unique()
+summary.iso.model.2 <- left_join(summary.iso.model.2, iso_data[,c("locality", "wc_mean", "wc_median", "wc_variance", "wc_stdev", "AREA..sq.km.")], by = "locality") %>% unique()
 
 # convert woody cover mean and median values to proportion
-summary.iso.model[,c("wc_mean", "wc_median")] <- summary.iso.model[,c("wc_mean", "wc_median")]/100
+summary.iso.model.2[,c("wc_mean", "wc_median")] <- summary.iso.model.2[,c("wc_mean", "wc_median")]/100
 ```
 
 ```{r}
-ggplot(data = summary.iso.model, aes(y = mean_wc_pred, x = wc_mean, fill = wc_mean)) +
+# plotting median and iqr for posterior predictions
+ggplot(data = summary.iso.model.2, aes(y = med_wc_pred, x = wc_median, fill = wc_median)) +
   geom_abline(slope = 1, intercept = 0, linetype = 2)+
-  geom_errorbar(aes(ymin=mean_wc_pred-sd_wc_pred, ymax = mean_wc_pred+sd_wc_pred))+
+  geom_errorbar(aes(ymin=q1_wc_pred, ymax = q3_wc_pred, width=0))+
   geom_point(shape = 21, size = 4)+
   scale_fill_distiller(palette = "BrBG", direction = 1, name = NULL)+
   xlim(0,1)+
   ylim(0,1)+
-  labs(y = "posterior predicted mean woody cover", x = "mean woody cover")+
+  labs(y = "posterior predictions", x = "median woody cover")+
   theme_classic(base_size = 16)+
-  theme(legend.position = "bottom")
-ggsave("figures/posterior_vs_actual_woody_cover_model.png", height = 8, width = 9)
+  theme(legend.position = "bottom")+
+  guides(fill = guide_colorbar(barwidth = 15))
+ggsave("figures/posterior_vs_actual_woody_cover_model_2.png", height = 8, width = 9)
+
+```
+
+
+## Compare mean/median of each taxon to actual median 
+```{r}
+# averaged at the site level
+taxa_compare <- iso.model.2.post.pred %>% select(-name, -Sample_ID) %>% group_by(locality, taxon_model) %>% mutate(taxon_mean = mean(value), taxon_median = median(value)) %>% select(-value) %>% distinct()
+taxa_compare <- taxa_compare %>% mutate(median_diff = pct_wc_median - taxon_median)
+taxa_compare <- taxa_compare %>% mutate(abs_med_diff = abs(median_diff))
+
+# family level groupings
+taxa_compare %>% filter(Family != "Bovidae") %>% 
+  ggplot(aes(x = fct_reorder(taxon_model, desc(abs_med_diff)), y = median_diff, color = taxon_model))+
+  geom_boxplot()+
+  geom_hline(aes(yintercept = 0), color = "gray")+
+  geom_hline(aes(yintercept = -0.1), linetype = 2, color = "gray")+
+  geom_hline(aes(yintercept = 0.1), linetype = 2, color = "gray")+
+  geom_point(alpha = 0.5)+
+  family_colors()+
+  labs(y = "actual median - median predicted value (by locality)", x = NULL)+
+  theme_classic(base_size = 16)+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
+ggsave("figures/family_groups_error_boxplots_by_site.png", width = 9, height = 8)
+
+# absolute value
+taxa_compare %>% filter(Family != "Bovidae") %>% 
+  ggplot(aes(x = fct_reorder(taxon_model, desc(abs_med_diff)), y = abs_med_diff, color = taxon_model))+
+  geom_boxplot()+
+  geom_point(alpha = 0.5)+
+  family_colors()+
+  labs(y = "absolute value of\nactual median - median predicted value (by locality)", x = NULL)+
+  theme_classic(base_size = 16)+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
+ggsave("figures/abs_val_family_groups_error_boxplots_by_site.png", width = 9, height = 8)
+
+# bovids
+taxa_compare %>% filter(Family == "Bovidae") %>% 
+  ggplot(aes(x = fct_reorder(taxon_model, desc(median_diff)), y = median_diff, color = taxon_model))+
+  geom_boxplot()+
+  geom_hline(aes(yintercept = 0), color = "gray")+
+  geom_hline(aes(yintercept = -0.1), linetype = 2, color = "gray")+
+  geom_hline(aes(yintercept = 0.1), linetype = 2, color = "gray")+
+  geom_point(alpha = 0.5)+
+  bovid_colors()+
+  labs(y = "actual median - median predicted value (by locality)", x = NULL)+
+  theme_classic(base_size = 16)+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
+ggsave("figures/tribe_groups_error_boxplots_by_site.png", width = 9, height = 8)
+
+taxa_compare %>% filter(Family == "Bovidae") %>% 
+  ggplot(aes(x = fct_reorder(taxon_model, desc(abs_med_diff)), y = abs_med_diff, color = taxon_model))+
+  geom_boxplot()+
+  geom_point(alpha = 0.5)+
+  bovid_colors()+
+  labs(y = "absolute value of\nactual median - median predicted value (by locality)", x = NULL)+
+  theme_classic(base_size = 16)+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
+ggsave("figures/abs_val_tribe_groups_error_boxplots_by_site.png", width = 9, height = 8)
+
+```
+
+### Figure 6
+```{r}
+# using the individual values (taken as the median of the posterior predictions)
+individual_compare <- iso.model.2.post.pred %>% select(-name) %>% group_by(Sample_ID) %>% mutate(indiv_mean = mean(value), indiv_median = median(value)) %>% select(-value) %>% distinct()
+individual_compare <- individual_compare %>% mutate(diff = pct_wc_median - indiv_median)
+individual_compare <- individual_compare %>% mutate(abs_dif = abs(diff))
+
+# plot raw differences for non-bovid families; in descending order based on the absolute value of differences
+fam_diff <- individual_compare %>% filter(Family !="Bovidae") %>%
+  ggplot(aes(x = fct_reorder(taxon_model, desc(abs_dif)), y = diff, color = Family))+
+  geom_boxplot()+
+  geom_hline(aes(yintercept = 0), color = "gray")+
+  geom_hline(aes(yintercept = -0.1), linetype = 2, color = "gray")+
+  geom_hline(aes(yintercept = 0.1), linetype = 2, color = "gray")+
+  geom_point(alpha = 0.5)+
+  family_colors()+
+  ylim(-0.6,0.75)+
+  labs(y = "median woody cover - predicted value", x = NULL)+
+  theme_classic(base_size = 16)+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
+ggsave("figures/family_groups_error_boxplots_by_individual.png", width = 9, height = 8)
+
+# plot absolute values of differences for non-bovid families
+abs_fam_diff <- individual_compare %>% filter(Family !="Bovidae") %>%
+  ggplot(aes(x = fct_reorder(taxon_model, desc(abs_dif)), y = abs_dif, color = Family))+
+  geom_boxplot()+
+  geom_point(alpha = 0.5)+
+  family_colors()+
+  labs(y = "absolute value of \nmedian woody cover - predicted value", x = NULL)+
+  theme_classic(base_size = 16)+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
+ggsave("figures/abs_val_family_groups_error_boxplots_by_individual.png", width = 9, height = 8)
+
+# plot raw differences for bovid tribes; in descending order based on the absolute value of differences
+bov_diff <- individual_compare %>% filter(Family =="Bovidae") %>%
+  ggplot(aes(x = fct_reorder(taxon_model, desc(abs_dif)), y = diff, color = taxon_model))+
+  geom_boxplot()+
+  geom_hline(aes(yintercept = 0), color = "gray")+
+  geom_hline(aes(yintercept = -0.1), linetype = 2, color = "gray")+
+  geom_hline(aes(yintercept = 0.1), linetype = 2, color = "gray")+
+  geom_point(alpha = 0.5)+
+  bovid_colors()+
+  ylim(-0.6,0.75)+
+  labs(y = "median woody cover - predicted value", x = NULL)+
+  theme_classic(base_size = 16)+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
+ggsave("figures/tribe_groups_error_boxplots_by_individual.png", width = 9, height = 8)
+
+# plot absolute values of differences for bovid tribes
+abs_bov_diff <- individual_compare %>% filter(Family =="Bovidae") %>%
+  ggplot(aes(x = fct_reorder(taxon_model, desc(abs_dif)), y = abs_dif, color = taxon_model))+
+  geom_boxplot()+
+  geom_point(alpha = 0.5)+
+  bovid_colors()+
+  labs(y = "absolute value of \nmedian woody cover - predicted value", x = NULL)+
+  theme_classic(base_size = 16)+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
+ggsave("figures/abs_val_tribe_groups_error_boxplots_by_individual.png", width = 9, height = 8)
+
+```
+
+```{r}
+(fam_diff | bov_diff) + plot_layout(axis_titles = "collect_y", axes = "collect_y", widths = c(14,10))
+ggsave("figures/all_groups_error_boxplots.png", width = 12, height = 8)
+```
+
+### Figure 7
+Facet plots of each taxon d13C versus distance to locality median and locality woody cover
+```{r}
+individual_compare <- left_join(individual_compare, iso_data[,c("Sample_ID", "Taxonomic_ID", "d13C_corrected")])
+
+# plot individual d13C vs difference between real and predicted - color based on taxon
+individual_compare %>% filter(Family %in% c("Cercopithecidae", "Elephantidae", "Equidae", "Felidae", "Giraffidae", "Hippopotamidae", "Hominidae", "Hyaenidae", "Rhinocerotidae", "Suidae")) %>%
+  ggplot(aes(x = d13C_corrected, y = diff, fill = taxon_model))+
+  geom_hline(aes(yintercept = 0), color = "gray")+
+  geom_point(shape = 21, alpha = 0.5, size = 3)+
+  family_fills()+
+  theme_classic(base_size = 16)+
+  ylab("median woody cover - predicted value")+
+  xlab(expression(paste(delta^{13},"C (\U2030 VPDB)")))+
+  facet_wrap(~taxon_model, nrow = 2)+
+  scale_x_continuous(breaks = c(-20, -10, 0))+
+  theme(legend.position = "none")
+ggsave("figures/diff_vs_d13C_family.png", width = 15, height = 8)
+
+# plot individual d13C vs difference between real and predicted - color based on woody cover at locality
+individual_compare %>% filter(Family %in% c("Cercopithecidae", "Elephantidae", "Equidae", "Felidae", "Giraffidae", "Hippopotamidae", "Hominidae", "Hyaenidae", "Rhinocerotidae", "Suidae")) %>%
+  ggplot(aes(x = d13C_corrected, y = diff, fill = pct_wc_median))+
+  geom_hline(aes(yintercept = 0), color = "gray")+
+  geom_point(shape = 21, alpha = 0.6, size = 3)+
+  scale_fill_distiller(palette = "BrBG", direction = 1, name = "proportion\nwoody cover")+
+  theme_classic(base_size = 16)+
+  ylab("median woody cover - predicted value")+
+  xlab(expression(paste(delta^{13},"C (\U2030 VPDB)")))+
+  facet_wrap(~taxon_model, nrow = 2)+
+  scale_x_continuous(breaks = c(-20, -10, 0))+
+  theme(legend.position = "bottom", legend.direction = "horizontal")+
+  guides(fill = guide_colorbar(barwidth = 15))
+ggsave("figures/diff_vs_d13C_family_wc_colors.png", width = 15, height = 9)
+
+# plot individual d13C vs woody cover at locality
+individual_compare %>% filter(Family %in% c("Cercopithecidae", "Elephantidae", "Equidae", "Felidae", "Giraffidae", "Hippopotamidae", "Hominidae", "Hyaenidae", "Rhinocerotidae", "Suidae")) %>%
+  ggplot(aes(x = d13C_corrected, y = pct_wc_median, fill = taxon_model))+
+  geom_point(shape = 21, alpha = 0.5, size = 3)+
+  family_fills()+
+  theme_classic(base_size = 16)+
+  ylab("median woody cover")+
+  xlab(expression(paste(delta^{13},"C (\U2030 VPDB)")))+
+  facet_wrap(~taxon_model, nrow = 2)+
+  scale_x_continuous(breaks = c(-20, -10, 0))+
+  theme(legend.position = "none")
+ggsave("figures/wc_vs_d13C_family.png", width = 15, height = 8)
+
+# plot individual d13C (Bovids) vs difference between real and predicted woody cover - color based on tribe
+individual_compare %>% filter(Family == "Bovidae" & taxon_model != "Caprini") %>%
+  ggplot(aes(x = d13C_corrected, y = diff, fill = taxon_model))+
+  geom_hline(aes(yintercept = 0), color = "gray")+
+  geom_point(shape = 21, alpha = 0.5, size = 3)+
+  bovid_fills()+
+  theme_classic(base_size = 16)+
+  ylab("median woody cover - predicted value")+
+  xlab(expression(paste(delta^{13},"C (\U2030 VPDB)")))+
+  facet_wrap(~taxon_model)+
+  scale_x_continuous(breaks = c(-20, -10, 0))+
+  theme(legend.position = "none")
+ggsave("figures/diff_vs_d13C_bovids.png", width = 9, height = 12)
+
+# plot individual d13C (Bovids) vs difference between real and predicted woody cover - color based on locality woody cover
+individual_compare %>% filter(Family == "Bovidae" & taxon_model != "Caprini") %>%
+  ggplot(aes(x = d13C_corrected, y = diff, fill = pct_wc_median))+
+  geom_hline(aes(yintercept = 0), color = "gray")+
+  geom_point(shape = 21, alpha = 0.5, size = 3)+
+  scale_fill_distiller(palette = "BrBG", direction = 1, name = "proportion\nwoody cover")+
+  theme_classic(base_size = 16)+
+  ylab("median woody cover - predicted value")+
+  xlab(expression(paste(delta^{13},"C (\U2030 VPDB)")))+
+  facet_wrap(~taxon_model)+
+  scale_x_continuous(breaks = c(-20, -10, 0))+
+  theme(legend.position = "bottom", legend.direction = "horizontal")+
+  guides(fill = guide_colorbar(barwidth = 15))
+ggsave("figures/diff_vs_d13C_bovids_wc_colors.png", width = 9, height = 13)
+
+# plot individual d13C (Bovids) vs woody cover
+individual_compare %>% filter(Family == "Bovidae" & taxon_model != "Caprini") %>%
+  ggplot(aes(x = d13C_corrected, y = pct_wc_median, fill = taxon_model))+
+  geom_point(shape = 21, alpha = 0.5, size = 3)+
+  bovid_fills()+
+  theme_classic(base_size = 16)+
+  ylab("median woody cover")+
+  xlab(expression(paste(delta^{13},"C (\U2030 VPDB)")))+
+  facet_wrap(~taxon_model)+
+  scale_x_continuous(breaks = c(-20, -10, 0))+
+  theme(legend.position = "none")
+ggsave("figures/wc_vs_d13C_bovids.png", width = 9, height = 12)
+
+# (FIGURE 7) plot ALL groups difference vs d13C with coloring according to locality percent woody cover
+individual_compare %>% filter(Family %in% c("Bovidae","Cercopithecidae", "Elephantidae", "Equidae", "Felidae", "Giraffidae", "Hippopotamidae", "Hominidae", "Hyaenidae", "Rhinocerotidae", "Suidae") & taxon_model != "Caprini") %>%
+  ggplot(aes(x = d13C_corrected, y = diff, fill = pct_wc_median))+
+  geom_hline(aes(yintercept = 0), color = "gray")+
+  geom_point(shape = 21, alpha = 0.6, size = 3)+
+  scale_fill_distiller(palette = "BrBG", direction = 1, name = "median proportion\nwoody cover")+
+  theme_classic(base_size = 18)+
+  ylab("median woody cover - predicted value")+
+  xlab(expression(paste(delta^{13},"C (\U2030 VPDB)")))+
+  facet_wrap(~taxon_model)+
+  scale_x_continuous(breaks = c(-20, -10, 0))+
+  theme(legend.position = c(0.9,0.1), legend.direction = "horizontal", legend.title.position = "top")+
+  guides(fill = guide_colorbar(barwidth = 10))
+ggsave("figures/diff_vs_d13C_ALL_wc_colors.png", width = 16, height = 16)
 ```

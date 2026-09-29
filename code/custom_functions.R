@@ -7,9 +7,9 @@ family_colors <- function(){
                "Cercopithecidae" = "#D1AAC2FF", 
                "Elephantidae" = "#A5506DFF",
                "Equidae" = "gray40",
-               "Felidae" = "#B3E0BFFF", 
+               "Felidae" = "#7ac98f", # changed from '#B3E0BFFF'
                "Giraffidae" = "#2A9D3DFF", 
-               "Hippopotamidae" = "#EDF181FF", 
+               "Hippopotamidae" = "#EDE15A", 
                "Hominidae" = "#DB7003FF", 
                "Hyaenidae" = "#F8C1A6FF", 
                "Hystricidae" = "#FBA600FF", 
@@ -43,9 +43,9 @@ family_fills <- function(){
                "Cercopithecidae" = "#D1AAC2FF", 
                "Elephantidae" = "#A5506DFF",
                "Equidae" = "gray40",
-               "Felidae" = "#B3E0BFFF", 
+               "Felidae" = "#7ac98f", # changed from '#B3E0BFFF'
                "Giraffidae" = "#2A9D3DFF", 
-               "Hippopotamidae" = "#EDF181FF", 
+               "Hippopotamidae" = "#EDE15A", 
                "Hominidae" = "#DB7003FF", 
                "Hyaenidae" = "#F8C1A6FF", 
                "Hystricidae" = "#FBA600FF", 
@@ -132,7 +132,7 @@ country_plot <- function(posterior_preds, country, real_data){
     ggplot()+
     stat_halfeye(aes(x = value, y = locality, shape = "predicted value"), color = "lightsalmon4", fill = alpha("lightsalmon3", alpha = 0.7), point_size = 3, point_interval = "median_qi", .width = 0.89)+
     new_scale(new_aes = "shape")+ 
-    geom_star(data = real_data[real_data$COUNTRY == country,], mapping = aes(x = pct_wc_mean, y = locality, starshape = "actual value"), size = 4, fill = "white", starstroke = 1.5)+
+    geom_star(data = real_data[real_data$COUNTRY == country,], mapping = aes(x = pct_wc_median, y = locality, starshape = "actual value"), size = 4, fill = "white", starstroke = 1.5)+
     scale_starshape_manual(values = c("actual value" = 1), name = element_blank())+
     xlab("proportion woody cover") +
     xlim(0, 1)+
@@ -151,7 +151,7 @@ country_taxon_plot <- function(posterior_preds, country, real_data){
     family_colors() +
     family_fills() +
     new_scale(new_aes = "shape")+
-    geom_star(data = real_data[real_data$COUNTRY == country,], aes(x = pct_wc_mean, y = locality, starshape = "actual value"), size = 4, fill = "white", starstroke = 1.5) +
+    geom_star(data = real_data[real_data$COUNTRY == country,], aes(x = pct_wc_median, y = locality, starshape = "actual value"), size = 4, fill = "white", starstroke = 1.5) +
     scale_starshape_manual(values = c("actual value" = 1), name = "") +
     xlim(0,1)+
     xlab("proportion woody cover") + 
@@ -170,7 +170,7 @@ country_bovid_plot <- function(posterior_preds, country, real_data){
     bovid_colors() +
     bovid_fills()+
     new_scale(new_aes = "shape")+
-    geom_star(data = real_data[real_data$COUNTRY == country & real_data$Family == "Bovidae",], aes(x = pct_wc_mean, y = locality, starshape = "actual value"), size = 4, fill = "white", starstroke = 1.5) +
+    geom_star(data = real_data[real_data$COUNTRY == country & real_data$Family == "Bovidae",], aes(x = pct_wc_median, y = locality, starshape = "actual value"), size = 4, fill = "white", starstroke = 1.5) +
     scale_starshape_manual(values = c("actual value" = 1), name = "") +
     xlim(0,1)+
     xlab("proportion woody cover") + 
